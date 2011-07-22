@@ -18,44 +18,81 @@
 		
 		<script type="text/javascript">
 			
+			var images = [];
+			var calls = 0;
 			
-			jQuery(function($){
-
-
-                $.getJSON("http://api.tumblr.com/v2/blog/puelocesar.tumblr.com/posts/photo?jsonp=?", {
+            function install_supersized(pimages) {
+                $.supersized({
+				        
+		            fit_always: 1,
+		            random: 1,
+		
+			        // Functionality
+			        slide_interval          :   3000,		// Length between transitions
+			        transition              :   3, 			// 0-None, 1-Fade, 2-Slide Top, 3-Slide Right, 4-Slide Bottom, 5-Slide Left, 6-Carousel Right, 7-Carousel Left
+			        transition_speed		:	700,		// Speed of transition
+													           
+			        // Components							
+			        slide_links				:	'blank',	// Individual links for each slide (Options: false, 'number', 'name', 'blank')
+			        slides 					:  	pimages
+			
+		        });
+            }
+            
+            function fetch_images(tumblr_name, depth) {
+            
+                var reblogs = [];
+                calls += 1;
+            
+                $.getJSON("http://api.tumblr.com/v2/blog/" + tumblr_name + ".tumblr.com/posts/photo?jsonp=?", {
                         api_key: 'SBbcngNIIYpCXOkRwMJ7X62Pgi9trXHdigXBfJJmCOJBIWrSf0',
                         reblog_info: true
                     },
                     function(data) {
                     
-                        var images = [];
+                        calls -= 1;
                         
                         for (var i=0; i<data.response.posts.length; i++) {
-                            var alt_sizes = data.response.posts[i].photos[0].alt_sizes;
+                            var post = data.response.posts[i];
+                            var alt_sizes = post.photos[0].alt_sizes;
+                            
+                            var title = post.blog_name;
+                            
+                            if (post.caption != undefined) {
+                                var html = post.caption;
+                                var div = document.createElement("div");
+                                div.innerHTML = html;
+                                title += " - " + (div.textContent || div.innerText || "");
+                            }
+                            
 				            images.push(
 				                {
 				                    image: alt_sizes[0].url,
-				                    title: data.response.posts[i].id,
+				                    title: title,
 				                    thumb: alt_sizes[alt_sizes.length-1].url
 				                }
 				            );
+				            
+				            var reblogged = post.reblogged_root_name;
+				            
+				            if (reblogged != undefined)
+				                if (reblogs.indexOf(reblogged) == -1)
+				                    reblogs.push(reblogged);
 				        }
 				        
-				        $.supersized({
+				        if (depth > 0)
+				            for (var i=0; i<reblogs.length; i++)
+				                fetch_images(reblogs[i], depth-1);
 				        
-				            fit_always: 1,
-				
-					        // Functionality
-					        slide_interval          :   3000,		// Length between transitions
-					        transition              :   3, 			// 0-None, 1-Fade, 2-Slide Top, 3-Slide Right, 4-Slide Bottom, 5-Slide Left, 6-Carousel Right, 7-Carousel Left
-					        transition_speed		:	700,		// Speed of transition
-															           
-					        // Components							
-					        slide_links				:	'blank',	// Individual links for each slide (Options: false, 'number', 'name', 'blank')
-					        slides 					:  	images
-					
-				        });
-                    });
+				        if (calls == 0)
+    				        install_supersized(images);
+				            
+                    }
+                );
+            }
+			
+			jQuery(function($){
+                fetch_images("justgoodtats", 2);                
 		    });
 		    
 		</script>
