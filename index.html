@@ -22,6 +22,7 @@
 			var calls = 0;
 			
             function install_supersized(pimages) {
+            
                 $.supersized({
 				        
 		            fit_always: 1,
@@ -92,7 +93,15 @@
             }
 			
 			jQuery(function($){
-                fetch_images("justgoodtats", 2);                
+			    $('#supersized-loader').hide();
+			    
+			    $("#name_input").keypress(function(event) {
+			        if (event.which == 13) {
+			             $("#name_input").hide();
+			            $('#supersized-loader').show();
+			            fetch_images($("#name_input").val(), 1);
+			        }
+			    });
 		    });
 		    
 		</script>
@@ -103,6 +112,8 @@
 		ul#demo-block{ margin:0 15px 15px 15px; }
 			ul#demo-block li{ margin:0 0 10px 0; padding:10px; display:inline; float:left; clear:both; color:#aaa; background:url('img/bg-black.png'); font:11px Helvetica, Arial, sans-serif; }
 			ul#demo-block li a{ color:#eee; font-weight:bold; }
+			
+		#name_input { width: 180px; height: 30px; left: 50%; margin: -15px 0 0 -90px; position: absolute; top: 50%; z-index: 0; }
 	</style>
 
 <body>
@@ -147,6 +158,8 @@
 			
 		</div>
 	</div>
+	
+	<input type="text" id="name_input" value="sextattoosdrugs" />
 
 </body>
 </html>
